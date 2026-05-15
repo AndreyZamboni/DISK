@@ -39,8 +39,7 @@
   .opts { display: grid; gap: 10px; }
   .opt { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 1.5px solid #e0dbd2; border-radius: 12px; background: #fff; cursor: pointer; text-align: left; transition: border-color .2s, background .2s; }
   .opt:hover { border-color: #b0aba3; }
-  .opt-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
-  .dot-D{background:#c94f27} .dot-I{background:#c4860a} .dot-S{background:#1a8c61} .dot-C{background:#1a60a8}
+  .opt-dot { display: none; }
   .opt-txt { font-size: 14px; line-height: 1.55; }
   .opt.sel-D { border-color: #c94f27; background: #fef3ee; }
   .opt.sel-I { border-color: #c4860a; background: #fef9ee; }
@@ -338,6 +337,24 @@ function showResult() {
   document.getElementById('res-tip').textContent = pr.tip;
 
   window._resultText = `RESULTADO DISC — ${nome}${cargo ? ' ('+cargo+')' : ''}\n\nPerfil dominante: ${top} — ${pr.name}\n\nPontuação:\n${['D','I','S','C'].map(k=>`  ${k} ${LABELS[k]}: ${Math.round(scores[k]/total*100)}%`).join('\n')}\n\nDescrição:\n${pr.desc}\n\nPontos fortes: ${pr.strong.join(', ')}\nOportunidades: ${pr.dev.join(', ')}\n\nDica para o líder:\n${pr.tip}`;
+
+  // Enviar para Formspree
+  fetch('https://formspree.io/f/xaqvrwaj', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({
+      nome: nome,
+      cargo: cargo || '—',
+      perfil_dominante: top + ' — ' + pr.name,
+      D_Dominante:      Math.round(scores.D/total*100) + '%',
+      I_Influente:      Math.round(scores.I/total*100) + '%',
+      S_Estavel:        Math.round(scores.S/total*100) + '%',
+      C_Consciencioso:  Math.round(scores.C/total*100) + '%',
+      pontos_fortes:    pr.strong.join(', '),
+      oportunidades:    pr.dev.join(', '),
+      data:             new Date().toLocaleString('pt-BR')
+    })
+  }).catch(() => {});
 }
 
 function copyRes() {
